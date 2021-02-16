@@ -31,31 +31,54 @@ cron.schedule("* * * * *", () => {
   getWeather();
 })
 
-function sendMessage(temp) {
-  client.messages
+// Here I would have a function that retreives all of the alerts
+const users = [
+  {
+    // verify number
+    name: "Robin",
+    phone: "+4790076246",
+  },
+  {
+    // verify number
+    name: "Ruben",
+    phone: "+4797160269",
+  },
+  {
+    name: "Dejan",
+    phone: "+4790076246",
+  },
+];
+
+function sendMessage(temp, phone) {
+  return client.messages
     .create({
       body: `It's snowing in Lillestrøm and the temperature is ${temp}°C. Dress warmly!`,
-      to: process.env.TO,
+      to: phone,
       from: process.env.FROM,
     })
-    .then((message) => console.log(message.body));
 }
 
 async function getWeather() {
   try {
     const response = await axios.get(weatherUrl);
-    console.log('weather data fetched');
 
     if (response.status !== 200) {
       console.warn(response.statusText);
       return;
     } else {
       let { id: weatherId } = response.data.weather[0];
-      const { temp } = response.data.main;
-      console.log(weatherId);
+      let { temp } = response.data.main;
+      temp = Math.round(temp);
+      // GOD MODE ON: Thou shall have snow in Lillestrøm❄️
+      weatherId = 601;
 
       if (weatherId >= 600 && weatherId <= 622) {
-        sendMessage(temp);
+        const messageResponses = await Promise.all(
+          users.map((user) => {
+            return sendMessage(temp, user.phone);
+          })
+        );
+        console.log(messageResponses);
         return;
       } else {
         return;
