@@ -21,7 +21,7 @@ const weatherKey = process.env.WEATHER_KEY;
 const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=lillestrom&appid=${weatherKey}&units=metric`;
 
 const axios = require("axios").default;
-const cron = require("node-cron")
+const cron = require("node-cron");
 
 const twilio = require("twilio");
 const client = new twilio(accountSid, authToken);
@@ -29,7 +29,7 @@ const client = new twilio(accountSid, authToken);
 // * * * * * runs the callback function every minute
 cron.schedule("* * * * *", () => {
   getWeather();
-})
+});
 
 // Here I would have a function that retreives all of the alerts
 const users = [
@@ -49,13 +49,12 @@ const users = [
   },
 ];
 
-function sendMessage(temp, phone) {
-  return client.messages
-    .create({
-      body: `It's snowing in Lillestrøm and the temperature is ${temp}°C. Dress warmly!`,
-      to: phone,
-      from: process.env.FROM,
-    })
+function sendMessage(temp, phone, name) {
+  return client.messages.create({
+    body: `Hei ${name}! It's snowing in Lillestrøm and the temperature is ${temp}°C. Dress warmly!`,
+    to: phone,
+    from: process.env.FROM,
+  });
 }
 
 async function getWeather() {
@@ -75,7 +74,7 @@ async function getWeather() {
       if (weatherId >= 600 && weatherId <= 622) {
         const messageResponses = await Promise.all(
           users.map((user) => {
-            return sendMessage(temp, user.phone);
+            return sendMessage(temp, user.phone, user.name);
           })
         );
         console.log(messageResponses);
